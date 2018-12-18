@@ -1,0 +1,42 @@
+version: '3'
+services:
+  nginx:
+    container_name: dev_nginx
+    image: nginx
+    volumes:
+      - ./projects:/var/www
+      - ./hosts:/etc/nginx/conf.d
+      - ./logs:/var/log/nginx
+    ports:
+      - 80:80
+    restart: always
+    depends_on:
+      - php
+      - db
+    networks:
+      - front
+      - backend
+  php:
+    container_name: dev_php
+    build: ./docker/php
+    restart: always
+    volumes:
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/php.ini
+      - ./docker/php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      - ./projects:/var/www
+    networks:
+      - backend
+  db:
+    container_name: dev_db
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - 5432:5432
+    networks:
+      - backend
+
+networks:
+  front:
+  backend:
